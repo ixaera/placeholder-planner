@@ -1,0 +1,28 @@
+/* You can add global styles to this file, and also import other style files */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar styling for winter theme */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #EDE9FE;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7C3AED;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5B21B6;
+}
+
+/* Ensure smooth checkbox animations */
+input[type="checkbox"] {
+  transition: all 0.2s ease-in-out;
+}
