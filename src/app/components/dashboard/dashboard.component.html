@@ -1,0 +1,105 @@
+<!-- Main Container with Winter Background -->
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-violet-50 to-lavender-100 p-6">
+
+  <!-- Title Header -->
+  <header class="text-center mb-8 relative">
+    <h1 class="text-5xl font-bold text-indigo-950 tracking-tight">
+      {{ title }}
+    </h1>
+    <!-- Logout Button -->
+    <button
+      (click)="logout()"
+      class="absolute top-0 right-4 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-lg shadow-md transition-colors duration-200">
+      Logout
+    </button>
+  </header>
+
+  <!-- Top Bar Panel -->
+  <div class="max-w-7xl mx-auto mb-6">
+    <div class="bg-white border-4 border-violet-500 rounded-lg shadow-lg p-4">
+      <div class="flex justify-center items-center gap-4 text-lg font-semibold text-indigo-900">
+        <span class="px-4 py-2 bg-indigo-100 rounded-md">{{ weekInfo }}</span>
+        <span class="text-violet-400">|</span>
+        <span class="px-4 py-2 bg-violet-100 rounded-md">{{ quarterInfo }}</span>
+        <span class="text-violet-400">|</span>
+        <span class="px-4 py-2 bg-lavender-200 rounded-md italic">{{ motivationalText }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area: Tasks and Goals -->
+  <div class="max-w-7xl mx-auto mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+      <!-- Main Left Panel: Monday Tasks (75% on large screens = 3/4 columns) -->
+      <div class="lg:col-span-3">
+        <div class="bg-white border-2 border-indigo-300 rounded-lg shadow-xl p-6 h-full">
+          <h2 class="text-3xl font-bold text-indigo-950 mb-6 pb-3 border-b-2 border-violet-200">
+            Monday
+          </h2>
+
+          <div class="space-y-3">
+            @for (task of tasks; track task.id) {
+              <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-indigo-50 transition-colors duration-200">
+                <input
+                  type="checkbox"
+                  [id]="'task-' + task.id"
+                  [(ngModel)]="task.completed"
+                  class="mt-1 w-5 h-5 text-violet-600 border-indigo-300 rounded focus:ring-violet-500 focus:ring-2 cursor-pointer"
+                />
+                <label
+                  [for]="'task-' + task.id"
+                  class="flex-1 text-lg cursor-pointer"
+                  [class.line-through]="task.completed"
+                  [class.text-gray-400]="task.completed"
+                  [class.text-indigo-900]="!task.completed">
+                  {{ task.text }}
+                </label>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar: Weekly Goals (25% on large screens = 1/4 column) -->
+      <div class="lg:col-span-1">
+        <div class="bg-white border-2 border-violet-300 rounded-lg shadow-xl p-6 h-full">
+          <h2 class="text-2xl font-bold text-violet-950 mb-6 pb-3 border-b-2 border-indigo-200">
+            Weekly Goals
+          </h2>
+
+          <div class="space-y-3">
+            @for (goal of weeklyGoals; track goal.id) {
+              <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-violet-50 transition-colors duration-200">
+                <input
+                  type="checkbox"
+                  [id]="'goal-' + goal.id"
+                  [(ngModel)]="goal.completed"
+                  class="mt-1 w-5 h-5 text-indigo-600 border-violet-300 rounded focus:ring-indigo-500 focus:ring-2 cursor-pointer"
+                />
+                <label
+                  [for]="'goal-' + goal.id"
+                  class="flex-1 text-base cursor-pointer"
+                  [class.line-through]="goal.completed"
+                  [class.text-gray-400]="goal.completed"
+                  [class.text-violet-900]="!goal.completed">
+                  {{ goal.text }}
+                </label>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Panel -->
+  <div class="max-w-7xl mx-auto">
+    <div class="bg-white border-4 border-violet-500 rounded-lg shadow-lg p-4">
+      <div class="text-center text-lg font-medium text-indigo-800">
+        {{ bottomText }}
+      </div>
+    </div>
+  </div>
+
+</div>
