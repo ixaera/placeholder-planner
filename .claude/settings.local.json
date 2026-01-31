@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git push:*)",
+      "Bash(ssh-keyscan:*)",
+      "Bash(~/.ssh/known_hosts)",
+      "Bash(dir /B \"c:\\\\Users\\\\freck\\\\placeholder-planner\\\\src\\\\app\")",
+      "Bash(npm start)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(ng generate:*)"
+    ]
+  }
+}

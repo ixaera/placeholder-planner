@@ -1,0 +1,101 @@
+<div class="bg-white border-2 border-violet-300 rounded-lg shadow-xl p-6 h-full">
+  <h2 class="text-2xl font-bold text-violet-950 mb-6 pb-3 border-b-2 border-indigo-200">
+    Weekly Goals
+  </h2>
+
+  <!-- Add New Weekly Goal Input -->
+  <div class="mb-4" (click)="stopPropagation($event)">
+    <div class="flex flex-col gap-2">
+      <input
+        type="text"
+        [(ngModel)]="newWeeklyGoal"
+        (keyup.enter)="addWeeklyGoal()"
+        placeholder="Add a new goal..."
+        class="w-full px-3 py-2 border-2 border-violet-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm"
+      />
+      <button
+        (click)="addWeeklyGoal()"
+        class="w-full px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg text-sm">
+        Add Goal
+      </button>
+    </div>
+  </div>
+
+  <!-- Weekly Goals List -->
+  <div class="space-y-3">
+    @for (goal of goals; track goal.id) {
+      <div class="p-3 rounded-lg hover:bg-violet-50 transition-colors duration-200 border border-violet-100">
+        <!-- Goal Row -->
+        <div class="flex items-start gap-2">
+          <input
+            type="checkbox"
+            [id]="'weekly-goal-' + goal.id"
+            [(ngModel)]="goal.completed"
+            class="mt-1 w-4 h-4 text-violet-600 border-violet-300 rounded focus:ring-violet-500 focus:ring-2 cursor-pointer"
+          />
+          <label
+            [for]="'weekly-goal-' + goal.id"
+            class="flex-1 text-sm cursor-pointer"
+            [class.line-through]="goal.completed"
+            [class.text-gray-400]="goal.completed"
+            [class.text-violet-900]="!goal.completed">
+            {{ goal.text }}
+          </label>
+          <button
+            (click)="showWeeklyTagInput(goal.id, $event)"
+            [class.bg-violet-500]="goal.showTagInput"
+            [class.text-white]="goal.showTagInput"
+            [class.bg-violet-100]="!goal.showTagInput"
+            [class.text-violet-700]="!goal.showTagInput"
+            class="ml-1 w-6 h-6 flex items-center justify-center hover:bg-violet-200 rounded-full transition-colors duration-200 shadow-sm hover:shadow-md flex-shrink-0"
+            title="Add tag">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Tags Display -->
+        @if (goal.tags && goal.tags.length > 0) {
+          <div (click)="stopPropagation($event)" class="flex flex-wrap gap-1 mt-2 ml-6">
+            @for (tag of goal.tags; track $index) {
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-200 text-violet-900 rounded-full text-xs font-medium">
+                {{ tag }}
+                <button
+                  (click)="removeWeeklyTag(goal.id, $index)"
+                  class="ml-0.5 hover:bg-violet-300 rounded-full p-0.5 transition-colors duration-200"
+                  title="Remove tag">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Tag Input -->
+        @if (goal.showTagInput) {
+          <div (click)="stopPropagation($event)" class="mt-2 ml-6">
+            <div class="flex flex-col gap-1">
+              <input
+                type="text"
+                [(ngModel)]="newWeeklyTagInput[goal.id]"
+                (keyup.enter)="addTagToWeeklyGoal(goal.id)"
+                [maxlength]="15"
+                placeholder="Add tag..."
+                class="w-full px-2 py-1 border-2 border-violet-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-xs"
+              />
+              <button
+                (click)="addTagToWeeklyGoal(goal.id)"
+                class="w-full px-2 py-1 bg-violet-500 hover:bg-violet-600 text-white font-semibold rounded-lg transition-colors duration-200 text-xs">
+                Add
+              </button>
+              <p class="text-xs text-violet-600">{{ goal.tags?.length || 0 }}/5 tags</p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
