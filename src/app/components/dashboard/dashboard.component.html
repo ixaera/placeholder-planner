@@ -50,7 +50,27 @@
     </div>
   </div>
 
+  <!-- Tag Management View (Full Width) -->
+  @if (showTagManagement) {
+    <div class="max-w-7xl mx-auto mb-6">
+      <app-tag-management
+        [tags]="getAllTags()"
+        (tagRenamed)="onTagRenamed($event)"
+        (tagDeleted)="onTagDeleted($event)"
+        (tagAdded)="onTagAdded($event)">
+      </app-tag-management>
+    </div>
+  }
+
+  <!-- Analysis View (Full Width) -->
+  @if (showAnalysis) {
+    <div class="max-w-7xl mx-auto mb-6">
+      <app-analysis></app-analysis>
+    </div>
+  }
+
   <!-- Main Content Area: Tasks and Goals -->
+  @if (!showTagManagement && !showAnalysis) {
   <div class="max-w-7xl mx-auto mb-6">
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
@@ -58,32 +78,51 @@
       <div class="lg:col-span-3">
         <!-- Daily Tasks View -->
         @if (!showYearlyGoals && !showQuarterlyGoals) {
-          <app-daily-tasks [tasks]="tasks"></app-daily-tasks>
+          <app-daily-tasks [tasks]="tasks" [availableTags]="globalTags"></app-daily-tasks>
         }
 
         <!-- Quarterly Goals View -->
         @if (showQuarterlyGoals) {
-          <app-quarterly-goals [goals]="quarterlyGoals"></app-quarterly-goals>
+          <app-quarterly-goals [goals]="quarterlyGoals" [availableTags]="globalTags"></app-quarterly-goals>
         }
 
         <!-- Yearly Goals View -->
         @if (showYearlyGoals) {
-          <app-yearly-goals [goals]="yearlyGoals"></app-yearly-goals>
+          <app-yearly-goals [goals]="yearlyGoals" [availableTags]="globalTags"></app-yearly-goals>
         }
       </div>
 
       <!-- Right Sidebar: Weekly Goals (25% on large screens = 1/4 column) -->
       <div class="lg:col-span-1">
-        <app-weekly-goals [goals]="weeklyGoals"></app-weekly-goals>
+        <app-weekly-goals [goals]="weeklyGoals" [availableTags]="globalTags"></app-weekly-goals>
       </div>
     </div>
   </div>
+  }
 
   <!-- Bottom Panel -->
   <div class="max-w-7xl mx-auto">
     <div class="bg-white border-4 border-violet-500 rounded-lg shadow-lg p-4">
-      <div class="text-center text-lg font-medium text-indigo-800">
-        {{ bottomText }}
+      <div class="flex justify-center items-center gap-4">
+        <button
+          (click)="toggleTagManagement()"
+          [class.bg-violet-500]="showTagManagement"
+          [class.text-white]="showTagManagement"
+          [class.bg-violet-100]="!showTagManagement"
+          [class.text-indigo-900]="!showTagManagement"
+          class="px-6 py-3 rounded-md hover:bg-violet-400 hover:text-white transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md text-lg font-semibold">
+          Manage Tags
+        </button>
+        <span class="text-violet-400">|</span>
+        <button
+          (click)="toggleAnalysis()"
+          [class.bg-indigo-500]="showAnalysis"
+          [class.text-white]="showAnalysis"
+          [class.bg-indigo-100]="!showAnalysis"
+          [class.text-indigo-900]="!showAnalysis"
+          class="px-6 py-3 rounded-md hover:bg-indigo-400 hover:text-white transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md text-lg font-semibold">
+          Analyze
+        </button>
       </div>
     </div>
   </div>

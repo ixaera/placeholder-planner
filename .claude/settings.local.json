@@ -10,7 +10,8 @@
       "Bash(npm start)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(ng generate:*)"
+      "Bash(ng generate:*)",
+      "Bash(npm test:*)"
     ]
   }
 }

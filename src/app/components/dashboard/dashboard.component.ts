@@ -8,6 +8,8 @@ import { DailyTasksComponent } from '../daily-tasks/daily-tasks';
 import { WeeklyGoalsComponent } from '../weekly-goals/weekly-goals';
 import { QuarterlyGoalsComponent } from '../quarterly-goals/quarterly-goals';
 import { YearlyGoalsComponent } from '../yearly-goals/yearly-goals';
+import { TagManagementComponent } from '../tag-management/tag-management';
+import { AnalysisComponent } from '../analysis/analysis';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,7 +19,9 @@ import { YearlyGoalsComponent } from '../yearly-goals/yearly-goals';
     DailyTasksComponent,
     WeeklyGoalsComponent,
     QuarterlyGoalsComponent,
-    YearlyGoalsComponent
+    YearlyGoalsComponent,
+    TagManagementComponent,
+    AnalysisComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -34,6 +38,11 @@ export class DashboardComponent {
   // View toggle
   showYearlyGoals = false;
   showQuarterlyGoals = false;
+  showTagManagement = false;
+  showAnalysis = false;
+
+  // Global tag list
+  globalTags: string[] = ['happy house', 'survive', 'strong body', 'sharp mind', 'create'];
 
   // Mock tasks for Monday
   tasks: Task[] = [
@@ -84,18 +93,24 @@ export class DashboardComponent {
   toggleYearlyGoals(): void {
     this.showYearlyGoals = !this.showYearlyGoals;
     this.showQuarterlyGoals = false;
+    this.showTagManagement = false;
+    this.showAnalysis = false;
   }
 
   // Toggle between daily and quarterly view
   toggleQuarterlyGoals(): void {
     this.showQuarterlyGoals = !this.showQuarterlyGoals;
     this.showYearlyGoals = false;
+    this.showTagManagement = false;
+    this.showAnalysis = false;
   }
 
   // Show daily tasks view
   showDailyTasks(): void {
     this.showYearlyGoals = false;
     this.showQuarterlyGoals = false;
+    this.showTagManagement = false;
+    this.showAnalysis = false;
   }
 
   // Logout functionality
@@ -110,5 +125,93 @@ export class DashboardComponent {
     this.weeklyGoals.forEach(goal => goal.showTagInput = false);
     this.yearlyGoals.forEach(goal => goal.showTagInput = false);
     this.quarterlyGoals.forEach(goal => goal.showTagInput = false);
+  }
+
+  // Toggle tag management view
+  toggleTagManagement(): void {
+    this.showTagManagement = !this.showTagManagement;
+    if (this.showTagManagement) {
+      this.showYearlyGoals = false;
+      this.showQuarterlyGoals = false;
+      this.showAnalysis = false;
+    }
+    this.closeAllTagInputs();
+  }
+
+  // Toggle analysis view
+  toggleAnalysis(): void {
+    this.showAnalysis = !this.showAnalysis;
+    if (this.showAnalysis) {
+      this.showYearlyGoals = false;
+      this.showQuarterlyGoals = false;
+      this.showTagManagement = false;
+    }
+    this.closeAllTagInputs();
+  }
+
+  // Get all global tags
+  getAllTags(): string[] {
+    return this.globalTags;
+  }
+
+  // Rename a tag across all goals and tasks
+  renameTag(oldTag: string, newTag: string): void {
+    const renameInArray = (items: (Task | Goal)[]) => {
+      items.forEach(item => {
+        if (item.tags) {
+          const index = item.tags.indexOf(oldTag);
+          if (index !== -1) {
+            item.tags[index] = newTag;
+          }
+        }
+      });
+    };
+
+    renameInArray(this.tasks);
+    renameInArray(this.weeklyGoals);
+    renameInArray(this.quarterlyGoals);
+    renameInArray(this.yearlyGoals);
+
+    // Also update in global tag list
+    const globalIndex = this.globalTags.indexOf(oldTag);
+    if (globalIndex !== -1) {
+      this.globalTags[globalIndex] = newTag;
+    }
+  }
+
+  // Delete a tag from all goals and tasks
+  deleteTag(tag: string): void {
+    const removeFromArray = (items: (Task | Goal)[]) => {
+      items.forEach(item => {
+        if (item.tags) {
+          item.tags = item.tags.filter(t => t !== tag);
+        }
+      });
+    };
+
+    removeFromArray(this.tasks);
+    removeFromArray(this.weeklyGoals);
+    removeFromArray(this.quarterlyGoals);
+    removeFromArray(this.yearlyGoals);
+
+    // Also remove from global tag list
+    this.globalTags = this.globalTags.filter(t => t !== tag);
+  }
+
+  // Event handler for tag renamed
+  onTagRenamed(event: {oldTag: string, newTag: string}): void {
+    this.renameTag(event.oldTag, event.newTag);
+  }
+
+  // Event handler for tag deleted
+  onTagDeleted(tag: string): void {
+    this.deleteTag(tag);
+  }
+
+  // Event handler for tag added
+  onTagAdded(tag: string): void {
+    if (tag && tag.length <= 15 && !this.globalTags.includes(tag)) {
+      this.globalTags.push(tag);
+    }
   }
 }

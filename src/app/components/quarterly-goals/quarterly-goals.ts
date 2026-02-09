@@ -11,9 +11,11 @@ import { Goal } from '../../models/task.interface';
 })
 export class QuarterlyGoalsComponent {
   @Input() goals: Goal[] = [];
+  @Input() availableTags: string[] = [];
 
   newQuarterlyGoal = '';
   newQuarterlyTagInput: { [goalId: number]: string } = {};
+  showTagDropdown: { [goalId: number]: boolean } = {};
 
   addQuarterlyGoal(): void {
     if (this.newQuarterlyGoal.trim()) {
@@ -37,28 +39,56 @@ export class QuarterlyGoalsComponent {
       if (goal.id !== goalId && goal.showTagInput) {
         goal.showTagInput = false;
         this.newQuarterlyTagInput[goal.id] = '';
+        this.showTagDropdown[goal.id] = false;
       }
     });
 
     const goal = this.goals.find(g => g.id === goalId);
     if (goal) {
       goal.showTagInput = true;
+      this.showTagDropdown[goalId] = true;
     }
   }
 
-  addTagToQuarterlyGoal(goalId: number): void {
+  getFilteredTags(goalId: number): string[] {
     const goal = this.goals.find(g => g.id === goalId);
-    const tagValue = this.newQuarterlyTagInput[goalId]?.trim();
+    const searchTerm = this.newQuarterlyTagInput[goalId]?.toLowerCase() || '';
+    const goalTags = goal?.tags || [];
 
-    if (goal && tagValue) {
+    return this.availableTags.filter(tag =>
+      !goalTags.includes(tag) &&
+      tag.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  selectTag(goalId: number, tag: string): void {
+    const goal = this.goals.find(g => g.id === goalId);
+
+    if (goal) {
       if (!goal.tags) {
         goal.tags = [];
       }
 
-      if (goal.tags.length < 5 && tagValue.length <= 15) {
-        goal.tags.push(tagValue);
+      if (goal.tags.length < 5 && !goal.tags.includes(tag)) {
+        goal.tags.push(tag);
         this.newQuarterlyTagInput[goalId] = '';
+        this.showTagDropdown[goalId] = false;
       }
+    }
+  }
+
+  onTagInputFocus(goalId: number): void {
+    this.showTagDropdown[goalId] = true;
+  }
+
+  onTagInputChange(goalId: number): void {
+    this.showTagDropdown[goalId] = true;
+  }
+
+  addTagToQuarterlyGoal(goalId: number): void {
+    const filteredTags = this.getFilteredTags(goalId);
+    if (filteredTags.length > 0) {
+      this.selectTag(goalId, filteredTags[0]);
     }
   }
 

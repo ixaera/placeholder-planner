@@ -11,9 +11,11 @@ import { Task } from '../../models/task.interface';
 })
 export class DailyTasksComponent {
   @Input() tasks: Task[] = [];
+  @Input() availableTags: string[] = [];
 
   newTask = '';
   newTaskTagInput: { [taskId: number]: string } = {};
+  showTagDropdown: { [taskId: number]: boolean } = {};
 
   addTask(): void {
     if (this.newTask.trim()) {
@@ -37,28 +39,56 @@ export class DailyTasksComponent {
       if (task.id !== taskId && task.showTagInput) {
         task.showTagInput = false;
         this.newTaskTagInput[task.id] = '';
+        this.showTagDropdown[task.id] = false;
       }
     });
 
     const task = this.tasks.find(t => t.id === taskId);
     if (task) {
       task.showTagInput = true;
+      this.showTagDropdown[taskId] = true;
     }
   }
 
-  addTagToTask(taskId: number): void {
+  getFilteredTags(taskId: number): string[] {
     const task = this.tasks.find(t => t.id === taskId);
-    const tagValue = this.newTaskTagInput[taskId]?.trim();
+    const searchTerm = this.newTaskTagInput[taskId]?.toLowerCase() || '';
+    const taskTags = task?.tags || [];
 
-    if (task && tagValue) {
+    return this.availableTags.filter(tag =>
+      !taskTags.includes(tag) &&
+      tag.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  selectTag(taskId: number, tag: string): void {
+    const task = this.tasks.find(t => t.id === taskId);
+
+    if (task) {
       if (!task.tags) {
         task.tags = [];
       }
 
-      if (task.tags.length < 5 && tagValue.length <= 15) {
-        task.tags.push(tagValue);
+      if (task.tags.length < 5 && !task.tags.includes(tag)) {
+        task.tags.push(tag);
         this.newTaskTagInput[taskId] = '';
+        this.showTagDropdown[taskId] = false;
       }
+    }
+  }
+
+  onTagInputFocus(taskId: number): void {
+    this.showTagDropdown[taskId] = true;
+  }
+
+  onTagInputChange(taskId: number): void {
+    this.showTagDropdown[taskId] = true;
+  }
+
+  addTagToTask(taskId: number): void {
+    const filteredTags = this.getFilteredTags(taskId);
+    if (filteredTags.length > 0) {
+      this.selectTag(taskId, filteredTags[0]);
     }
   }
 
