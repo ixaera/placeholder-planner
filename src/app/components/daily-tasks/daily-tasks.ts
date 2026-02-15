@@ -12,6 +12,9 @@ import { Task } from '../../models/task.interface';
 export class DailyTasksComponent {
   @Input() tasks: Task[] = [];
   @Input() availableTags: string[] = [];
+  @Input() currentDate: string = '';    // NEW: current viewing date
+  @Input() isPast: boolean = false;     // NEW: period state
+  @Input() isFuture: boolean = false;   // NEW: period state
 
   newTask = '';
   newTaskTagInput: { [taskId: number]: string } = {};
@@ -20,11 +23,14 @@ export class DailyTasksComponent {
   addTask(): void {
     if (this.newTask.trim()) {
       const newTask: Task = {
-        id: this.tasks.length + 1,
+        id: Date.now(), // Better ID generation
         text: this.newTask.trim(),
         completed: false,
         tags: [],
-        showTagInput: false
+        showTagInput: false,
+        date: this.currentDate,                  // NEW: assign to viewing period
+        createdAt: new Date().toISOString(),    // NEW
+        updatedAt: new Date().toISOString()     // NEW
       };
       this.tasks.push(newTask);
       this.newTask = '';
@@ -107,5 +113,20 @@ export class DailyTasksComponent {
     this.tasks.forEach(task => {
       task.showTagInput = false;
     });
+  }
+
+  getDayTitle(): string {
+    if (!this.currentDate) {
+      return 'Today';
+    }
+    // Parse the date as local date to avoid timezone issues
+    const [year, month, day] = this.currentDate.split('-').map(num => parseInt(num, 10));
+    const date = new Date(year, month - 1, day);
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const dayName = days[date.getDay()];
+    const monthName = months[date.getMonth()];
+    return `${dayName}, ${monthName} ${day}`;
   }
 }

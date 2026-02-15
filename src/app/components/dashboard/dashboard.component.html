@@ -1,5 +1,9 @@
 <!-- Main Container with Winter Background -->
-<div (click)="closeAllTagInputs()" class="min-h-screen bg-gradient-to-br from-indigo-50 via-violet-50 to-lavender-100 p-6">
+<div (click)="closeAllTagInputs()"
+     class="min-h-screen p-6 transition-all duration-400"
+     [class.period-past]="isPastPeriod()"
+     [class.period-current]="isAtCurrentPeriod(activeScope)"
+     [class.period-future]="isFuturePeriod()">
 
   <!-- Title Header -->
   <header class="text-center mb-8 relative">
@@ -17,38 +21,109 @@
   <!-- Top Bar Panel -->
   <div class="max-w-7xl mx-auto mb-6">
     <div class="bg-white border-4 border-violet-500 rounded-lg shadow-lg p-4">
-      <div class="flex justify-center items-center gap-4 text-lg font-semibold text-indigo-900">
-        <button
-          (click)="showDailyTasks()"
-          [class.bg-indigo-500]="!showYearlyGoals && !showQuarterlyGoals"
-          [class.text-white]="!showYearlyGoals && !showQuarterlyGoals"
-          [class.bg-indigo-100]="showYearlyGoals || showQuarterlyGoals"
-          class="px-4 py-2 rounded-md hover:bg-indigo-400 hover:text-white transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md">
-          {{ weekInfo }}
-        </button>
+      <div class="flex justify-center items-center gap-2 text-lg font-semibold text-indigo-900 flex-wrap">
+
+        <!-- Day Tab with Arrows -->
+        <div class="flex items-center gap-1">
+          @if (activeScope === 'day') {
+            <app-arrow-button direction="left" (navigate)="navigatePeriod(-1)"></app-arrow-button>
+          }
+
+          <button
+            (click)="setActiveScope('day')"
+            [class]="getTabClasses('day')">
+            {{ getDayLabel() }}
+            @if (!isAtCurrentPeriod('day')) {
+              <span class="absolute top-0.5 right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
+            }
+          </button>
+
+          @if (activeScope === 'day') {
+            <app-arrow-button direction="right" (navigate)="navigatePeriod(1)"></app-arrow-button>
+          }
+        </div>
+
         <span class="text-violet-400">|</span>
-        <button
-          (click)="toggleQuarterlyGoals()"
-          [class.bg-purple-500]="showQuarterlyGoals"
-          [class.text-white]="showQuarterlyGoals"
-          [class.bg-violet-100]="!showQuarterlyGoals"
-          class="px-4 py-2 rounded-md hover:bg-purple-400 hover:text-white transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md">
-          {{ quarterInfo }}
-        </button>
+
+        <!-- Week Tab with Arrows -->
+        <div class="flex items-center gap-1">
+          @if (activeScope === 'week') {
+            <app-arrow-button direction="left" (navigate)="navigatePeriod(-1)"></app-arrow-button>
+          }
+
+          <button
+            (click)="setActiveScope('week')"
+            [class]="getTabClasses('week')">
+            {{ getWeekLabel() }}
+            @if (!isAtCurrentPeriod('week')) {
+              <span class="absolute top-0.5 right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
+            }
+          </button>
+
+          @if (activeScope === 'week') {
+            <app-arrow-button direction="right" (navigate)="navigatePeriod(1)"></app-arrow-button>
+          }
+        </div>
+
         <span class="text-violet-400">|</span>
-        <button
-          (click)="toggleYearlyGoals()"
-          [class.bg-violet-500]="showYearlyGoals"
-          [class.text-white]="showYearlyGoals"
-          [class.bg-violet-100]="!showYearlyGoals"
-          class="px-4 py-2 rounded-md hover:bg-violet-400 hover:text-white transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md">
-          {{ yearInfo }}
-        </button>
+
+        <!-- Quarter Tab with Arrows -->
+        <div class="flex items-center gap-1">
+          @if (activeScope === 'quarter') {
+            <app-arrow-button direction="left" (navigate)="navigatePeriod(-1)"></app-arrow-button>
+          }
+
+          <button
+            (click)="setActiveScope('quarter')"
+            [class]="getTabClasses('quarter')">
+            {{ getQuarterLabel() }}
+            @if (!isAtCurrentPeriod('quarter')) {
+              <span class="absolute top-0.5 right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
+            }
+          </button>
+
+          @if (activeScope === 'quarter') {
+            <app-arrow-button direction="right" (navigate)="navigatePeriod(1)"></app-arrow-button>
+          }
+        </div>
+
+        <span class="text-violet-400">|</span>
+
+        <!-- Year Tab with Arrows -->
+        <div class="flex items-center gap-1">
+          @if (activeScope === 'year') {
+            <app-arrow-button direction="left" (navigate)="navigatePeriod(-1)"></app-arrow-button>
+          }
+
+          <button
+            (click)="setActiveScope('year')"
+            [class]="getTabClasses('year')">
+            {{ getYearLabel() }}
+            @if (!isAtCurrentPeriod('year')) {
+              <span class="absolute top-0.5 right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
+            }
+          </button>
+
+          @if (activeScope === 'year') {
+            <app-arrow-button direction="right" (navigate)="navigatePeriod(1)"></app-arrow-button>
+          }
+        </div>
+
         <span class="text-violet-400">|</span>
         <span class="px-4 py-2 bg-lavender-200 rounded-md italic">{{ motivationalText }}</span>
       </div>
     </div>
   </div>
+
+  <!-- Time State Banner -->
+  @if (!isAtCurrentPeriod(activeScope)) {
+    <app-time-banner
+      [periodLabel]="getCurrentPeriodLabel()"
+      [isPast]="isPastPeriod()"
+      [isFuture]="isFuturePeriod()"
+      (backToToday)="jumpToToday()">
+    </app-time-banner>
+  }
 
   <!-- Tag Management View (Full Width) -->
   @if (showTagManagement) {
@@ -78,23 +153,47 @@
       <div class="lg:col-span-3">
         <!-- Daily Tasks View -->
         @if (!showYearlyGoals && !showQuarterlyGoals) {
-          <app-daily-tasks [tasks]="tasks" [availableTags]="globalTags"></app-daily-tasks>
+          <app-daily-tasks
+            [tasks]="tasks"
+            [availableTags]="globalTags"
+            [currentDate]="currentPeriodKeys.day"
+            [isPast]="isPastPeriod()"
+            [isFuture]="isFuturePeriod()">
+          </app-daily-tasks>
         }
 
         <!-- Quarterly Goals View -->
         @if (showQuarterlyGoals) {
-          <app-quarterly-goals [goals]="quarterlyGoals" [availableTags]="globalTags"></app-quarterly-goals>
+          <app-quarterly-goals
+            [goals]="quarterlyGoals"
+            [availableTags]="globalTags"
+            [currentPeriodKey]="currentPeriodKeys.quarter"
+            [isPast]="isPastPeriod()"
+            [isFuture]="isFuturePeriod()">
+          </app-quarterly-goals>
         }
 
         <!-- Yearly Goals View -->
         @if (showYearlyGoals) {
-          <app-yearly-goals [goals]="yearlyGoals" [availableTags]="globalTags"></app-yearly-goals>
+          <app-yearly-goals
+            [goals]="yearlyGoals"
+            [availableTags]="globalTags"
+            [currentPeriodKey]="currentPeriodKeys.year"
+            [isPast]="isPastPeriod()"
+            [isFuture]="isFuturePeriod()">
+          </app-yearly-goals>
         }
       </div>
 
       <!-- Right Sidebar: Weekly Goals (25% on large screens = 1/4 column) -->
       <div class="lg:col-span-1">
-        <app-weekly-goals [goals]="weeklyGoals" [availableTags]="globalTags"></app-weekly-goals>
+        <app-weekly-goals
+          [goals]="weeklyGoals"
+          [availableTags]="globalTags"
+          [currentPeriodKey]="currentPeriodKeys.week"
+          [isPast]="isPastPeriod()"
+          [isFuture]="isFuturePeriod()">
+        </app-weekly-goals>
       </div>
     </div>
   </div>

@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Goal } from '../../models/task.interface';
+import { PeriodService } from '../../services/period.service';
 
 @Component({
   selector: 'app-weekly-goals',
@@ -12,6 +13,11 @@ import { Goal } from '../../models/task.interface';
 export class WeeklyGoalsComponent {
   @Input() goals: Goal[] = [];
   @Input() availableTags: string[] = [];
+  @Input() currentPeriodKey: string = '';   // NEW
+  @Input() isPast: boolean = false;         // NEW
+  @Input() isFuture: boolean = false;       // NEW
+
+  constructor(private periodService: PeriodService) {}
 
   newWeeklyGoal = '';
   newWeeklyTagInput: { [goalId: number]: string } = {};
@@ -20,11 +26,15 @@ export class WeeklyGoalsComponent {
   addWeeklyGoal(): void {
     if (this.newWeeklyGoal.trim()) {
       const newGoal: Goal = {
-        id: this.goals.length + 1,
+        id: Date.now(), // Better ID generation
         text: this.newWeeklyGoal.trim(),
         completed: false,
         tags: [],
-        showTagInput: false
+        showTagInput: false,
+        scope: 'week',                       // NEW
+        periodKey: this.currentPeriodKey,    // NEW
+        createdAt: new Date().toISOString(), // NEW
+        updatedAt: new Date().toISOString()  // NEW
       };
       this.goals.push(newGoal);
       this.newWeeklyGoal = '';
@@ -107,5 +117,12 @@ export class WeeklyGoalsComponent {
     this.goals.forEach(goal => {
       goal.showTagInput = false;
     });
+  }
+
+  getWeekTitle(): string {
+    if (!this.currentPeriodKey) {
+      return 'Weekly Goals';
+    }
+    return this.periodService.formatPeriodLabel(this.currentPeriodKey, 'week');
   }
 }

@@ -23,16 +23,19 @@ describe('DailyTasksComponent', () => {
   });
 
   describe('Task Creation', () => {
-    it('should add task with incremental ID', () => {
+    it('should add task with timestamp-based ID', () => {
       component.tasks = [
         { id: 1, text: 'Task 1', completed: false, tags: [] }
       ];
       component.newTask = 'New Task';
 
+      const beforeTime = Date.now();
       component.addTask();
+      const afterTime = Date.now();
 
       expect(component.tasks.length).toBe(2);
-      expect(component.tasks[1].id).toBe(2);
+      expect(component.tasks[1].id).toBeGreaterThanOrEqual(beforeTime);
+      expect(component.tasks[1].id).toBeLessThanOrEqual(afterTime);
       expect(component.tasks[1].text).toBe('New Task');
     });
 

@@ -12,6 +12,9 @@ import { Goal } from '../../models/task.interface';
 export class YearlyGoalsComponent {
   @Input() goals: Goal[] = [];
   @Input() availableTags: string[] = [];
+  @Input() currentPeriodKey: string = '';   // NEW
+  @Input() isPast: boolean = false;         // NEW
+  @Input() isFuture: boolean = false;       // NEW
 
   newYearlyGoal = '';
   newTagInput: { [goalId: number]: string } = {};
@@ -20,11 +23,15 @@ export class YearlyGoalsComponent {
   addYearlyGoal(): void {
     if (this.newYearlyGoal.trim()) {
       const newGoal: Goal = {
-        id: this.goals.length + 1,
+        id: Date.now(), // Better ID generation
         text: this.newYearlyGoal.trim(),
         completed: false,
         tags: [],
-        showTagInput: false
+        showTagInput: false,
+        scope: 'year',                       // NEW
+        periodKey: this.currentPeriodKey,    // NEW
+        createdAt: new Date().toISOString(), // NEW
+        updatedAt: new Date().toISOString()  // NEW
       };
       this.goals.push(newGoal);
       this.newYearlyGoal = '';

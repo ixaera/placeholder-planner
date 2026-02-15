@@ -11,7 +11,14 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(ng generate:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(npm install:*)",
+      "Bash(npx ng build:*)",
+      "Bash(1)",
+      "Bash(rd /s /q .angular)",
+      "Bash(git -C \"c:\\\\Users\\\\freck\\\\placeholder-planner\" config core.autocrlf)",
+      "Bash(git -C \"c:\\\\Users\\\\freck\\\\placeholder-planner\" add .)",
+      "Bash(git -C \"c:\\\\Users\\\\freck\\\\placeholder-planner\" status nul)"
     ]
   }
 }

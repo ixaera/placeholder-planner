@@ -1,1 +1,31 @@
+/* Past period styling */
+.period-past {
+  background: linear-gradient(180deg, #F3F0F8 0%, #EAE5F2 100%);
+}
 
+.period-past .bg-white {
+  background-color: #F7F8FC !important;
+  border-color: #DDD6E8 !important;
+  opacity: 0.95;
+}
+
+/* Future period styling */
+.period-future {
+  background: linear-gradient(180deg, #F8F5FF 0%, #F0ECFA 100%);
+}
+
+.period-future .bg-white {
+  background-color: #FAF8FF !important;
+  border-color: #C4B5E0 !important;
+  box-shadow: 0 0 0 1px #C4B5E0, 0 0 20px rgba(139, 92, 246, 0.15) !important;
+}
+
+/* Current period (default) */
+.period-current {
+  background: linear-gradient(to bottom right, #eef2ff, #ede9fe, #f3e8ff);
+}
+
+/* Smooth transitions */
+.period-transition {
+  transition: background 0.4s ease, opacity 0.3s ease;
+}

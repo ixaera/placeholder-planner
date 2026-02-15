@@ -23,16 +23,19 @@ describe('QuarterlyGoalsComponent', () => {
   });
 
   describe('Goal Creation', () => {
-    it('should add goal with incremental ID', () => {
+    it('should add goal with timestamp-based ID', () => {
       component.goals = [
         { id: 1, text: 'Goal 1', completed: false, tags: [] }
       ];
       component.newQuarterlyGoal = 'New Goal';
 
+      const beforeTime = Date.now();
       component.addQuarterlyGoal();
+      const afterTime = Date.now();
 
       expect(component.goals.length).toBe(2);
-      expect(component.goals[1].id).toBe(2);
+      expect(component.goals[1].id).toBeGreaterThanOrEqual(beforeTime);
+      expect(component.goals[1].id).toBeLessThanOrEqual(afterTime);
       expect(component.goals[1].text).toBe('New Goal');
     });
 

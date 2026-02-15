@@ -4,6 +4,9 @@ export interface Task {
   completed: boolean;
   tags?: string[];
   showTagInput?: boolean;
+  date?: string;          // ISO date "2026-01-27"
+  createdAt?: string;     // ISO timestamp
+  updatedAt?: string;     // ISO timestamp
 }
 
 export interface Goal {
@@ -12,4 +15,8 @@ export interface Goal {
   completed: boolean;
   tags?: string[];
   showTagInput?: boolean;
+  scope?: 'week' | 'quarter' | 'year';
+  periodKey?: string;     // "2026-W05", "2026-Q1", or "2026"
+  createdAt?: string;     // ISO timestamp
+  updatedAt?: string;     // ISO timestamp
 }

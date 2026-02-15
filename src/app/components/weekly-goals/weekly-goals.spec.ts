@@ -23,16 +23,19 @@ describe('WeeklyGoalsComponent', () => {
   });
 
   describe('Goal Creation', () => {
-    it('should add goal with incremental ID', () => {
+    it('should add goal with timestamp-based ID', () => {
       component.goals = [
         { id: 1, text: 'Goal 1', completed: false, tags: [] }
       ];
       component.newWeeklyGoal = 'New Goal';
 
+      const beforeTime = Date.now();
       component.addWeeklyGoal();
+      const afterTime = Date.now();
 
       expect(component.goals.length).toBe(2);
-      expect(component.goals[1].id).toBe(2);
+      expect(component.goals[1].id).toBeGreaterThanOrEqual(beforeTime);
+      expect(component.goals[1].id).toBeLessThanOrEqual(afterTime);
       expect(component.goals[1].text).toBe('New Goal');
     });
 
@@ -366,13 +369,12 @@ describe('WeeklyGoalsComponent', () => {
     });
 
     it('should initialize with empty goals array', () => {
-      const newComponent = new WeeklyGoalsComponent();
-      expect(newComponent.goals).toEqual([]);
+      expect(component.goals).toEqual([]);
     });
 
-    it('should initialize with empty availableTags array', () => {
-      const newComponent = new WeeklyGoalsComponent();
-      expect(newComponent.availableTags).toEqual([]);
+    it('should have availableTags from test setup', () => {
+      expect(component.availableTags.length).toBe(5);
+      expect(component.availableTags).toContain('happy house');
     });
 
     it('should initialize with empty newWeeklyTagInput object', () => {

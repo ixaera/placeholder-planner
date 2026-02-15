@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { DashboardComponent } from './dashboard.component';
 import { AuthService } from '../../services/auth.service';
 import { Task, Goal } from '../../models/task.interface';
@@ -18,7 +19,8 @@ describe('DashboardComponent', () => {
       imports: [DashboardComponent],
       providers: [
         { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter }
+        { provide: Router, useValue: mockRouter },
+        provideNoopAnimations()
       ]
     }).compileComponents();
 
@@ -379,16 +381,303 @@ describe('DashboardComponent', () => {
       expect(component.tasks.length).toBe(6);
     });
 
-    it('should have 5 mock weekly goals', () => {
-      expect(component.weeklyGoals.length).toBe(5);
+    it('should have mock weekly goals across all periods', () => {
+      expect(component.allWeeklyGoals.length).toBeGreaterThanOrEqual(5);
     });
 
-    it('should have 5 mock quarterly goals', () => {
-      expect(component.quarterlyGoals.length).toBe(5);
+    it('should have mock quarterly goals across all periods', () => {
+      expect(component.allQuarterlyGoals.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should have 5 mock yearly goals', () => {
-      expect(component.yearlyGoals.length).toBe(5);
+    it('should have mock yearly goals across all periods', () => {
+      expect(component.allYearlyGoals.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should initialize all period offsets to 0', () => {
+      expect(component.periodOffsets.day).toBe(0);
+      expect(component.periodOffsets.week).toBe(0);
+      expect(component.periodOffsets.quarter).toBe(0);
+      expect(component.periodOffsets.year).toBe(0);
+    });
+
+    it('should initialize all period keys', () => {
+      expect(component.currentPeriodKeys.day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(component.currentPeriodKeys.week).toMatch(/^\d{4}-W\d{2}$/);
+      expect(component.currentPeriodKeys.quarter).toMatch(/^\d{4}-Q[1-4]$/);
+      expect(component.currentPeriodKeys.year).toMatch(/^\d{4}$/);
+    });
+
+    it('should set active scope to week by default', () => {
+      expect(component.activeScope).toBe('week');
+    });
+  });
+
+  describe('Time Navigation', () => {
+    describe('navigatePeriod', () => {
+      it('should increment offset for active scope', () => {
+        component.activeScope = 'day';
+        component.navigatePeriod(1);
+
+        expect(component.periodOffsets.day).toBe(1);
+      });
+
+      it('should decrement offset when navigating backward', () => {
+        component.activeScope = 'week';
+        component.navigatePeriod(-1);
+
+        expect(component.periodOffsets.week).toBe(-1);
+      });
+
+      it('should update period keys after navigation', () => {
+        const oldDayKey = component.currentPeriodKeys.day;
+        component.activeScope = 'day';
+        component.navigatePeriod(1);
+
+        expect(component.currentPeriodKeys.day).not.toBe(oldDayKey);
+      });
+
+      it('should trigger change detection', () => {
+        spyOn(component['cdr'], 'detectChanges');
+        component.navigatePeriod(1);
+
+        expect(component['cdr'].detectChanges).toHaveBeenCalled();
+      });
+
+      describe('day-week synchronization', () => {
+        it('should sync week when navigating days into a different week', () => {
+          component.activeScope = 'day';
+          const initialWeekOffset = component.periodOffsets.week;
+
+          // Navigate 7 days forward (into next week)
+          for (let i = 0; i < 7; i++) {
+            component.navigatePeriod(1);
+          }
+
+          // Week offset should have changed
+          expect(component.periodOffsets.week).not.toBe(initialWeekOffset);
+        });
+
+        it('should sync day to Monday when navigating weeks', () => {
+          component.activeScope = 'week';
+          component.navigatePeriod(1);
+
+          // Day should now be Monday of the new week
+          const monday = component['periodService'].getMondayForWeek(component.currentPeriodKeys.week);
+          expect(component.currentPeriodKeys.day).toBe(monday);
+        });
+
+        it('should keep day and week aligned when navigating days', () => {
+          component.activeScope = 'day';
+          component.navigatePeriod(1);
+
+          // Get the week for the current day
+          const weekForDay = component['periodService'].getWeekKeyForDate(component.currentPeriodKeys.day);
+          expect(component.currentPeriodKeys.week).toBe(weekForDay);
+        });
+
+        it('should keep day and week aligned when navigating weeks', () => {
+          component.activeScope = 'week';
+          component.navigatePeriod(1);
+
+          // Day should be Monday of the current week
+          const monday = component['periodService'].getMondayForWeek(component.currentPeriodKeys.week);
+          expect(component.currentPeriodKeys.day).toBe(monday);
+        });
+      });
+    });
+
+    describe('jumpToToday', () => {
+      it('should reset all offsets to 0', () => {
+        component.periodOffsets.day = 5;
+        component.periodOffsets.week = 2;
+        component.periodOffsets.quarter = 1;
+        component.periodOffsets.year = 1;
+
+        component.jumpToToday();
+
+        expect(component.periodOffsets.day).toBe(0);
+        expect(component.periodOffsets.week).toBe(0);
+        expect(component.periodOffsets.quarter).toBe(0);
+        expect(component.periodOffsets.year).toBe(0);
+      });
+
+      it('should update all period keys', () => {
+        component.activeScope = 'week';
+        component.navigatePeriod(3);
+
+        const currentDay = component['periodService'].getCurrentPeriodKey('day');
+        const currentWeek = component['periodService'].getCurrentPeriodKey('week');
+
+        component.jumpToToday();
+
+        expect(component.currentPeriodKeys.day).toBe(currentDay);
+        expect(component.currentPeriodKeys.week).toBe(currentWeek);
+      });
+
+      it('should trigger change detection', () => {
+        spyOn(component['cdr'], 'detectChanges');
+        component.jumpToToday();
+
+        expect(component['cdr'].detectChanges).toHaveBeenCalled();
+      });
+
+      it('should resync day and week to current period', () => {
+        component.activeScope = 'week';
+        component.navigatePeriod(5);
+
+        component.jumpToToday();
+
+        const currentDay = component['periodService'].getCurrentPeriodKey('day');
+        const currentWeek = component['periodService'].getCurrentPeriodKey('week');
+
+        expect(component.currentPeriodKeys.day).toBe(currentDay);
+        expect(component.currentPeriodKeys.week).toBe(currentWeek);
+      });
+    });
+
+    describe('setActiveScope', () => {
+      it('should change the active scope', () => {
+        component.activeScope = 'day';
+        component.setActiveScope('week');
+
+        expect(component.activeScope).toBe('week');
+      });
+
+      it('should sync week to day when switching to day scope', () => {
+        component.activeScope = 'week';
+        component.navigatePeriod(1);
+
+        component.setActiveScope('day');
+
+        const weekForDay = component['periodService'].getWeekKeyForDate(component.currentPeriodKeys.day);
+        expect(component.currentPeriodKeys.week).toBe(weekForDay);
+      });
+
+      it('should sync day to Monday when switching to week scope', () => {
+        component.activeScope = 'day';
+        component.navigatePeriod(3);
+
+        component.setActiveScope('week');
+
+        const monday = component['periodService'].getMondayForWeek(component.currentPeriodKeys.week);
+        expect(component.currentPeriodKeys.day).toBe(monday);
+      });
+
+      it('should show daily tasks view when switching to day or week', () => {
+        component.showQuarterlyGoals = true;
+        component.setActiveScope('day');
+
+        expect(component.showYearlyGoals).toBe(false);
+        expect(component.showQuarterlyGoals).toBe(false);
+      });
+
+      it('should show quarterly goals when switching to quarter scope', () => {
+        component.setActiveScope('quarter');
+
+        expect(component.showQuarterlyGoals).toBe(true);
+        expect(component.showYearlyGoals).toBe(false);
+      });
+
+      it('should show yearly goals when switching to year scope', () => {
+        component.setActiveScope('year');
+
+        expect(component.showYearlyGoals).toBe(true);
+        expect(component.showQuarterlyGoals).toBe(false);
+      });
+    });
+
+    describe('period state checkers', () => {
+      it('isAtCurrentPeriod should return true for offset 0', () => {
+        expect(component.isAtCurrentPeriod('day')).toBe(true);
+        expect(component.isAtCurrentPeriod('week')).toBe(true);
+      });
+
+      it('isAtCurrentPeriod should return false for non-zero offset', () => {
+        component.periodOffsets.day = 1;
+        expect(component.isAtCurrentPeriod('day')).toBe(false);
+      });
+
+      it('isPastPeriod should return true for negative offset', () => {
+        component.activeScope = 'week';
+        component.navigatePeriod(-1);
+
+        expect(component.isPastPeriod()).toBe(true);
+      });
+
+      it('isPastPeriod should return false for zero offset', () => {
+        expect(component.isPastPeriod()).toBe(false);
+      });
+
+      it('isFuturePeriod should return true for positive offset', () => {
+        component.activeScope = 'week';
+        component.navigatePeriod(1);
+
+        expect(component.isFuturePeriod()).toBe(true);
+      });
+
+      it('isFuturePeriod should return false for zero offset', () => {
+        expect(component.isFuturePeriod()).toBe(false);
+      });
+    });
+
+    describe('period label formatters', () => {
+      it('getDayLabel should return formatted day label', () => {
+        const label = component.getDayLabel();
+        expect(label).toMatch(/^[A-Z][a-z]+, [A-Z][a-z]+ \d{1,2}$/);
+      });
+
+      it('getWeekLabel should return formatted week label', () => {
+        const label = component.getWeekLabel();
+        expect(label).toMatch(/^Week of [A-Z][a-z]+ \d{1,2}$/);
+      });
+
+      it('getQuarterLabel should return formatted quarter label', () => {
+        const label = component.getQuarterLabel();
+        expect(label).toMatch(/^Quarter [1-4]$/);
+      });
+
+      it('getYearLabel should return formatted year label', () => {
+        const label = component.getYearLabel();
+        expect(label).toMatch(/^\d{4} Goals$/);
+      });
+
+      it('getCurrentPeriodLabel should return label for active scope', () => {
+        component.activeScope = 'week';
+        const label = component.getCurrentPeriodLabel();
+        expect(label).toMatch(/^Week of [A-Z][a-z]+ \d{1,2}$/);
+      });
+    });
+
+    describe('getTabClasses', () => {
+      it('should return active classes for active scope', () => {
+        component.activeScope = 'week';
+        const classes = component.getTabClasses('week');
+
+        expect(classes).toContain('bg-indigo-500');
+        expect(classes).toContain('text-white');
+      });
+
+      it('should return inactive classes for non-active scope', () => {
+        component.activeScope = 'week';
+        const classes = component.getTabClasses('day');
+
+        expect(classes).toContain('bg-violet-100');
+        expect(classes).toContain('text-indigo-900');
+      });
+
+      it('should use purple for quarter scope when active', () => {
+        component.activeScope = 'quarter';
+        const classes = component.getTabClasses('quarter');
+
+        expect(classes).toContain('bg-purple-500');
+      });
+
+      it('should use violet for year scope when active', () => {
+        component.activeScope = 'year';
+        const classes = component.getTabClasses('year');
+
+        expect(classes).toContain('bg-violet-500');
+      });
     });
   });
 });
